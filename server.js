@@ -1,6 +1,21 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
+
+
+const db = mysql.createConnection(
+  {
+    host: 'localhost',
+    user: 'root',
+    password: 'LeeandCarter2023!',
+    database: 'work_db'
+  }
+)
+
+db.query(``, function (err, results) {
+
+})
+
 const questions = [
   {
     type: 'list',
@@ -28,3 +43,9 @@ const questions = [
   },
   
 ]
+
+init = () => {
+  inquirer.createPromptModule(questions)
+}
+
+init();
