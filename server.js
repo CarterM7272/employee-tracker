@@ -12,40 +12,107 @@ const db = mysql.createConnection(
   }
 )
 
-db.query(``, function (err, results) {
-
+db.connect((err) => {
+  if (err) throw new err;
+  console.log("Connected to the database")
 })
 
-const questions = [
+
+const prompt = [
   {
     type: 'list',
     message: 'What would you like to do?',
-    name: 'list',
-    choices: ['View All Employees', 'Add Employee', 'View All Departments', 'Add A Department', 'Add A Role', 'Update An Employee Role']
+    name: 'option',
+    choices: ['view all departments', 'view all roles', 'view all employees', 'add a department', 'add a role', 'add an employee', 'update an employee role']
   },
   {
     type: 'input',
-    message: 'What is the name of the department?',
+    message: 'What department would you like to add?',
     name: 'addDepartment',
-    default: 'Customer Support'
+    default: 'Customer Service'
+  },
+  {
+    type: 'input',
+    message: 'Update Employees',
+    name: 'insertEmployee',
+    default: 'Add Employee, include first and last name'
   }, 
   {
     type: 'input',
-    message: 'What would you like to do?',
+    message: 'What is the name of the role?',
     name: 'addRole',
     default: 'Add Role'
   },
   {
     type: 'input',
-    message: 'What is the name of the role',
-    name: 'nameRole',
-    default: 'Customer Representative'
-  },
-  
+    message: 'Update an employee role',
+    name: 'updateRole',
+    default: 'Jon Doe Software Engineer'
+  }
 ]
 
-init = () => {
-  inquirer.createPromptModule(questions)
+const viewAllDepartments = () =>  {
+  db.query('SELECT * FROM `department`', function (err, results) {
+    if (err) throw err;
+    return results
+  });
+}
+
+const handleUpdateDepartment = (answers) =>  {
+  const { addDepartment } = answers;
+  db.query('INSERT INTO `department` (departmentName) VALUES (?)', [addDepartment], function (err, results) {
+    if (err) throw err;
+    console.log(results)
+  });
+}
+
+const viewAllEmployees = () =>  {
+  db.query('SELECT * FROM `employee`', function (err, results) {
+    if (err) throw err;
+    console.log(results)
+  });
+}
+
+const handleUpdateEmployee = (answers) =>  {
+  const { insertEmployee } = answers;
+  db.query('INSERT INTO `employee` (first_name, last_name) VALUES (?, ?)' , [insertEmployee], function (err, results) {
+    if (err) throw err;
+    console.log(results)
+  });
+}
+
+const handleUpdateRole = (answers) =>  {
+  const { updateRole } = answers;
+  db.query('INSERT INTO `role` (title) VALUES (?)', [updateRole], function (err, results) {
+    if (err) throw err;
+    console.log(results)
+  });
+}
+
+const init = () => {
+  inquirer.prompt(prompt)
+    .then(answers => {
+      switch(answers.option) {
+        case  "View All Departments":
+          viewAllDepartments();
+          break;
+        case "Update A Department":
+          handleUpdateDepartment();
+          break;
+        case "View All Employees":
+          viewAllEmployees();
+          break;
+        case "Update Employee":
+          handleUpdateEmployee();
+          break;
+        case  "Update Employee Role":
+          handleUpdateRole();
+          break;
+      }
+    })
+    .catch(error => {
+      console.log("Error", error)
+    })
 }
 
 init();
