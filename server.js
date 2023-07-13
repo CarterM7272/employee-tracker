@@ -54,6 +54,7 @@ const prompt = [
 const viewAllDepartments = () =>  {
   db.query('SELECT * FROM `department`', function (err, results) {
     if (err) throw err;
+    console.log(results, "results")
     return results
   });
 }
@@ -62,7 +63,6 @@ const handleUpdateDepartment = (answers) =>  {
   const { addDepartment } = answers;
   db.query('INSERT INTO `department` (departmentName) VALUES (?)', [addDepartment], function (err, results) {
     if (err) throw err;
-    console.log(results)
   });
 }
 
@@ -92,20 +92,22 @@ const handleUpdateRole = (answers) =>  {
 const init = () => {
   inquirer.prompt(prompt)
     .then(answers => {
+      console.log(answers, "answers")
       switch(answers.option) {
-        case  "View All Departments":
+        case  "view all departments":
+          console.log("view all departments")
           viewAllDepartments();
           break;
-        case "Update A Department":
+        case "add a department":
           handleUpdateDepartment();
           break;
-        case "View All Employees":
+        case "view all employees":
           viewAllEmployees();
           break;
-        case "Update Employee":
+        case "add an employee":
           handleUpdateEmployee();
           break;
-        case  "Update Employee Role":
+        case  "update an employee role":
           handleUpdateRole();
           break;
       }
