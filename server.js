@@ -1,22 +1,17 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
-
-
-const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: 'LeeandCarter2023!',
-    database: 'work_db'
-  }
-)
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'LeeandCarter2023!',
+  database: 'work_db'
+});
 
 db.connect((err) => {
-  if (err) throw new err;
-  console.log("Connected to the database")
-})
-
+  if (err) throw err;
+  console.log("Connected to the database");
+});
 
 const prompt = [
   {
@@ -51,70 +46,97 @@ const prompt = [
   }
 ]
 
-const viewAllDepartments = () =>  {
-  db.query('SELECT * FROM `department`', function (err, results) {
-    if (err) throw err;
-    console.log(results, "results")
-    return results
+const viewAllDepartments = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM department', function (err, results) {
+      if (err) reject(err);
+      console.log(results);
+      resolve(results);
+    });
   });
-}
+};
 
-const handleUpdateDepartment = (answers) =>  {
+
+
+const handleUpdateDepartment = (answers) => {
   const { addDepartment } = answers;
-  db.query('INSERT INTO `department` (departmentName) VALUES (?)', [addDepartment], function (err, results) {
-    if (err) throw err;
+  return new Promise((resolve, reject) => {
+    db.query('INSERT INTO department (departmentName) VALUES (?)', [addDepartment], function (err, results) {
+      if (err) reject(err);
+      resolve(results);
+    });
   });
-}
+};
 
-const viewAllEmployees = () =>  {
-  db.query('SELECT * FROM `employee`', function (err, results) {
-    if (err) throw err;
-    console.log(results)
+
+
+const viewAllEmployees = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM employee', function (err, results) {
+      if (err) reject(err);
+      console.log(results);
+      resolve(results);
+    });
   });
-}
+};
 
-const handleUpdateEmployee = (answers) =>  {
+const handleUpdateEmployee = (answers) => {
   const { insertEmployee } = answers;
-  db.query('INSERT INTO `employee` (first_name, last_name) VALUES (?, ?)' , [insertEmployee], function (err, results) {
-    if (err) throw err;
-    console.log(results)
+  const [first_name, last_name] = insertEmployee.split(" ");
+  return new Promise((resolve, reject) => {
+    db.query('INSERT INTO employee (first_name, last_name) VALUES (?, ?)', [first_name, last_name], function (err, results) {
+      if (err) reject(err);
+      console.log(results);
+      resolve(results);
+    });
   });
-}
+};
 
-const handleUpdateRole = (answers) =>  {
+const handleUpdateRole = (answers) => {
   const { updateRole } = answers;
-  db.query('INSERT INTO `role` (title) VALUES (?)', [updateRole], function (err, results) {
-    if (err) throw err;
-    console.log(results)
+  return new Promise((resolve, reject) => {
+    db.query('INSERT INTO role (title) VALUES (?)', [updateRole], function (err, results) {
+      if (err) reject(err);
+      console.log(results);
+      resolve(results);
+    });
   });
-}
+};
 
-const init = () => {
-  inquirer.prompt(prompt)
-    .then(answers => {
-      console.log(answers, "answers")
-      switch(answers.option) {
-        case  "view all departments":
-          console.log("view all departments")
-          viewAllDepartments();
-          break;
-        case "add a department":
-          handleUpdateDepartment();
-          break;
-        case "view all employees":
-          viewAllEmployees();
-          break;
-        case "add an employee":
-          handleUpdateEmployee();
-          break;
-        case  "update an employee role":
-          handleUpdateRole();
-          break;
-      }
-    })
-    .catch(error => {
-      console.log("Error", error)
-    })
-}
+const init = async () => {
+  try {
+    const answers = await inquirer.prompt(prompt);
+    console.log(answers, "answers");
+    let result;
+    switch (answers.option) {
+      case "view all departments":
+        console.log("view all departments");
+        result = await viewAllDepartments();
+        break;
+      case "add a department":
+        result = await handleUpdateDepartment(answers);
+        break;
+      case "view all employees":
+        console.log("view all employees");
+        result = await viewAllEmployees();
+        break;
+      case "add an employee":
+        result = await handleUpdateEmployee(answers);
+        break;
+      case "update an employee role":
+        result = await handleUpdateRole(answers);
+        break;
+      default:
+        console.log("Invalid option");
+        db.end();
+        return; // Exit the function and stop inquirer
+    }
+    console.log("Result:", result);
+    db.end(); // Close the database connection after all operations are done
+  } catch (error) {
+    console.log("Error", error);
+    db.end(); // Close the database connection in case of an error
+  }
+};
 
 init();
