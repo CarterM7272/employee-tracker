@@ -8,10 +8,15 @@ const db = mysql.createConnection({
   database: 'work_db'
 });
 
-db.connect((err) => {
-  if (err) throw err;
-  console.log("Connected to the database");
-});
+const connectToDatabase = async () => {
+  try {
+    await db.connect();
+    console.log("Connected to the database");
+  } catch (err) {
+    console.error("Error connecting to the database:", err);
+    process.exit(1); // Exit the process with an error code
+  }
+};
 
 const prompt = [
   {
@@ -77,6 +82,7 @@ const viewAllEmployees = () => {
       console.log(results);
       resolve(results);
     });
+    prompt
   });
 };
 
@@ -104,7 +110,17 @@ const handleUpdateRole = (answers) => {
 };
 
 const init = async () => {
+
+  console.log("*******************")
+  console.log("*                  *")
+  console.log("* Employee Tracker *")
+  console.log("*                  *")
+  console.log("*******************")
+
+
+
   try {
+    await connectToDatabase();
     const answers = await inquirer.prompt(prompt);
     console.log(answers, "answers");
     let result;
